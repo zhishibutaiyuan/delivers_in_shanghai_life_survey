@@ -113,7 +113,11 @@ def point_card(doc, p, sub_label, cat_label):
     if p.get("quote"):
         pairs.append(("骑手原话", "“" + p["quote"].strip("“”\"") + "”"))
     pairs.append(("来源", f'{p.get("source", "")}　{p.get("date", "")}　{p.get("collector", "")}'.strip()))
+    if p.get("refs"):
+        pairs.append(("出处", "\n".join(p["refs"])))
     pairs.append(("坐标", f'{p["lng"]:.6f}, {p["lat"]:.6f}（GCJ-02）'))
+    if p.get("locNote"):
+        pairs.append(("位置说明", p["locNote"]))
     kv_table(doc, pairs)
 
     photos = [PHOTOS_DIR / f for f in p.get("photos", [])[:2]]
@@ -136,8 +140,6 @@ def main():
     by_cat = {c["key"]: [p for p in points if p["category"] == c["key"]] for c in tax["categories"]}
     sub_count = Counter(p["subtype"] for p in points)
     src_count = Counter(p.get("source", "") for p in points)
-    dates = sorted(p["date"] for p in points if p.get("date"))
-    collectors = sorted({p.get("collector", "") for p in points if p.get("collector")})
 
     doc = new_document()
     page_numbers(doc)
@@ -169,24 +171,31 @@ def main():
                 "都没有被算进时间里。", "算法看不见的障碍。")
     bullet(doc, "五角场街道“新心驿站”饮水、充电、微波炉等设施齐全，但骑手反映“位置太远”“怕错过订单”"
                 "“不知道有这个地方”，更习惯在路边休息。", "驿站“看得见、用不上”。")
-    para(doc, "本学期，团队把这些地方一个个走到、问到，整理成本手册，并做成可在手机上直接打开的《五角场骑手地图》网页，"
-              "让骑手能找到歇脚点、提前知道哪里难送。")
+    para(doc, "本学期，团队把实地走访、骑手访谈和公开资料中找到的歇脚点和障碍点整理成本手册，"
+              "并做成可在手机上直接打开的《五角场骑手地图》网页，让骑手能找到歇脚点、提前知道哪里难送。")
     todo(doc, "可补充：团队为什么关注这个话题、和“人民城市建设”主题的联系（2–3 句）。")
 
     # ---------- 二、调研方法 ----------
     doc.add_heading("二、调研方法", level=1)
-    steps(doc, [
-        ("实地走访：", "以五角场环岛为中心，沿主要道路步行踏勘，用网页“坐标拾取”功能现场记录坐标、拍照、写说明。"),
-        ("骑手访谈：", "利用骑手等餐、休息的间隙进行简短访谈，请骑手指认附近的歇脚点和障碍点（提纲见附录一）。"),
-        ("数据整理：", "统一填写点位采集表，由脚本校验必填项、分类、坐标范围，并去除照片中的 GPS 等拍摄信息。"),
-        ("回访验证：", "网页完成后携网页回访骑手，收集使用意见并修改。"),
-    ])
+    has = lambda name: any(name in (p.get("source") or "") for p in points)
+    methods = []
+    if has("实地走访") or is_sample:
+        methods.append(("实地走访：", "队员到现场记录设施和使用情况，用网页“坐标拾取”功能取坐标、拍照、写说明。"))
+    if has("骑手指认") or is_sample:
+        methods.append(("骑手访谈：", "利用骑手等餐、休息的间隙进行简短访谈，请骑手指认附近的歇脚点和障碍点（提纲见附录一）。"))
+    if has("公开资料"):
+        methods.append(("公开资料检索：", "检索杨浦区政府网站和新闻报道中公布的骑手驿站、商圈治理等信息，逐条记录出处链接。"
+                                        "这类点位没有经过实地核实，在地图和本手册中单独标注。"))
+    if load_responses()[1]:
+        methods.append(("反馈问卷：", "网页完成后请骑手试用并填写反馈问卷，统计见第六章。"))
+    methods.append(("数据整理：", "统一填写点位采集表，由脚本校验必填项、分类、坐标范围和出处，并去除照片中的 GPS 等拍摄信息。"))
+    steps(doc, methods)
     if points and not is_sample:
-        para(doc, f"本次共采集点位 {len(points)} 个：" +
-             "，".join(f"{k} {v} 个" for k, v in src_count.items() if k) + "。" +
-             (f"采集时间为 {dates[0]} 至 {dates[-1]}，" if dates else "") +
-             (f"参与采集的队员：{'、'.join(collectors)}。" if collectors else ""))
-    todo(doc, "实际走访的日期、路线、分组；访谈了几位骑手（平台、从业时长等，不写姓名）；回访情况。")
+        located = sum(1 for p in points if p.get("locNote"))
+        para(doc, f"地图共收录点位 {len(points)} 个，按来源分：" +
+             "，".join(f"{k} {v} 个" for k, v in src_count.most_common() if k) + "。" +
+             (f"其中 {located} 个点位的坐标按地图标注标定，具体见各点位的“位置说明”。" if located else ""))
+    todo(doc, "写明线下活动的日期、地点和参与人员，以及访谈了几位骑手（平台、从业时长等，不写姓名）。")
     para(doc, "隐私保护：访谈前说明用途；手册、网页和代码仓库均不包含骑手姓名、正脸照片、手机号等个人信息，骑手原话均匿名。",
          size=10, color=GRAY)
 
@@ -225,8 +234,9 @@ def main():
     page_break(doc)
     doc.add_heading("七、发现与建议", level=1)
     if points:
-        top = sub_count.most_common()
-        top_obstacle = next((sub_info[k][1]["label"] for k, _ in top if sub_info[k][0]["key"] == "obstacle"), None)
+        obs = [(k, v) for k, v in sub_count.most_common() if sub_info[k][0]["key"] == "obstacle"]
+        # 只有一类明显最多时才写“最多的是”，并列时不写
+        top_obstacle = sub_info[obs[0][0]][1]["label"] if obs and (len(obs) == 1 or obs[0][1] > obs[1][1]) else None
         facts = f"从数据看：共收录歇脚点 {len(by_cat.get('rest', []))} 个、障碍点 {len(by_cat.get('obstacle', []))} 个"
         if top_obstacle:
             facts += f"；障碍点中最多的是“{top_obstacle}”"
@@ -241,6 +251,17 @@ def main():
     bullet(doc, "在骑手常用的渠道推送附近驿站的位置和设施；与高频出餐商户合作设立小型服务点，把服务“送到骑手手边”。",
            "给驿站和街道：")
     bullet(doc, "持续更新这张地图，欢迎骑手和市民反馈新的点位。", "给我们自己：")
+    if points and not is_sample:
+        doc.add_heading("（三）局限", level=2)
+        limits = [f"点位数量较少（{len(points)} 个），只覆盖五角场一带的一部分，不能代表全部情况。"]
+        if has("公开资料"):
+            limits.append("部分点位来自公开资料，没有实地核实，开放时间、设施等可能已有变化。")
+        if any(p.get("locNote") for p in points):
+            limits.append("部分坐标是按地图标注标定的，不是现场所取，可能有几十米的偏差。")
+        if load_responses()[1]:
+            limits.append("反馈问卷样本很少，只能说明个别骑手的看法。")
+        for x in limits:
+            bullet(doc, x)
 
     # ---------- 八、网页介绍 ----------
     doc.add_heading("八、《五角场骑手地图》网页", level=1)

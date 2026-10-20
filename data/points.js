@@ -1,19 +1,109 @@
-// 示例数据：点位全部是虚构的，只用来测试网页功能。
-// 调研组交回点位表后，运行 python tools/build_data.py，本文件会被真实数据覆盖。
+// 由 tools/build_data.py 根据 data/points.xlsx 自动生成，请不要手动修改。
 window.RIDER_MAP_DATA = {
-  "isSample": true,
+  "isSample": false,
   "generatedAt": "2026-10-20",
   "points": [
-    { "id": "sample-01", "name": "示例驿站 A", "category": "rest", "subtype": "station", "lng": 121.5172, "lat": 31.3021, "address": "示例地址 1 号", "desc": "示例：有饮水、充电、微波炉，可借雨具。", "tags": ["可饮水", "可充电", "微波炉", "雨具", "空调"], "facilities": "饮水机、充电插座、座椅、微波炉、应急药品", "hours": "9:00–21:00", "photos": [], "source": "实地走访", "collector": "示例", "date": "2026-10-20", "quote": "示例原话：累了就进来坐会儿。" },
-    { "id": "sample-02", "name": "示例友好商户 B", "category": "rest", "subtype": "shop", "lng": 121.5118, "lat": 31.3004, "address": "示例地址 2 号", "desc": "示例：店家允许骑手进门接水、上厕所。", "tags": ["可饮水", "卫生间"], "facilities": "", "hours": "10:00–22:00", "photos": [], "source": "骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-03", "name": "示例公共卫生间 C", "category": "rest", "subtype": "toilet", "lng": 121.5161, "lat": 31.2962, "address": "示例地址 3 号", "desc": "示例：免费公厕，电动车可以停在门口。", "tags": ["卫生间", "24小时"], "facilities": "", "hours": "全天", "photos": [], "source": "实地走访", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-04", "name": "示例换电柜 D", "category": "rest", "subtype": "charge", "lng": 121.5098, "lat": 31.2978, "address": "示例地址 4 号", "desc": "示例：换电柜，晚高峰前常需排队。", "tags": ["可充电", "早晚高峰"], "facilities": "", "hours": "全天", "photos": [], "source": "实地走访+骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-05", "name": "示例休息点 E", "category": "rest", "subtype": "spot", "lng": 121.5196, "lat": 31.2995, "address": "示例路口东北角", "desc": "示例：树荫下的台阶，骑手常在这里等单。", "tags": [], "facilities": "", "hours": "", "photos": [], "source": "实地走访", "collector": "示例", "date": "2026-10-20", "quote": "示例原话：路边最自在。" },
-    { "id": "sample-06", "name": "示例校门 F", "category": "obstacle", "subtype": "noentry", "lng": 121.5070, "lat": 31.3012, "address": "示例路 5 号", "desc": "示例：电动车不能进入，需要步行约 8 分钟送到楼下。", "tags": ["需登记"], "facilities": "", "hours": "", "photos": [], "source": "骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "示例原话：系统只给三四分钟，进去肯定超时。" },
-    { "id": "sample-07", "name": "示例商场 G", "category": "obstacle", "subtype": "walk", "lng": 121.5139, "lat": 31.3031, "address": "示例地址 6 号", "desc": "示例：餐饮在顶层，取餐要坐两段扶梯，高峰期电梯要等 5 分钟以上。", "tags": ["早晚高峰"], "facilities": "", "hours": "", "photos": [], "source": "实地走访+骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-08", "name": "示例写字楼 H", "category": "obstacle", "subtype": "parking", "lng": 121.5185, "lat": 31.3048, "address": "示例地址 7 号", "desc": "示例：门口禁止停放电动车，最近的停车处在 200 米外。", "tags": [], "facilities": "", "hours": "", "photos": [], "source": "骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-09", "name": "示例施工路段 I", "category": "obstacle", "subtype": "road", "lng": 121.5108, "lat": 31.2948, "address": "示例路东段", "desc": "示例：道路施工围挡，只能绕行。", "tags": ["雨天积水", "夜间昏暗"], "facilities": "", "hours": "", "photos": [], "source": "实地走访", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-10", "name": "示例路口 J", "category": "obstacle", "subtype": "crossing", "lng": 121.5150, "lat": 31.2995, "address": "示例路与示例路交叉口", "desc": "示例：右转车多，骑手反映要减速慢行。", "tags": ["早晚高峰"], "facilities": "", "hours": "", "photos": [], "source": "骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" },
-    { "id": "sample-11", "name": "示例小区 K", "category": "obstacle", "subtype": "entrance", "lng": 121.5212, "lat": 31.3018, "address": "示例小区", "desc": "示例：导航定位在北门，实际只能从南门进。", "tags": [], "facilities": "", "hours": "", "photos": [], "source": "骑手指认", "collector": "示例", "date": "2026-10-20", "quote": "" }
+    {
+      "id": "fc98fc94",
+      "name": "新心驿站（五角场街道党群服务中心）",
+      "category": "rest",
+      "subtype": "station",
+      "lng": 121.519142,
+      "lat": 31.303873,
+      "address": "国和路 60 号（达任大厦一楼）",
+      "desc": "街道党群服务中心里的骑手驿站，可以休息、喝水、充电、热饭，还能借雨具和充电宝。",
+      "tags": [
+        "可饮水",
+        "可充电",
+        "卫生间",
+        "空调",
+        "微波炉",
+        "雨具"
+      ],
+      "facilities": "免费饮用水、手机充电插座、休息座椅、空调、微波炉、应急药品、卫生间，可借雨具和充电宝；2026 年 5 月实地记录时均可正常使用",
+      "hours": "",
+      "photos": [],
+      "source": "实地走访",
+      "collector": "春季调研组",
+      "date": "2026-05-10",
+      "quote": "自己在路边就是舒服……非常应急的情况下才去，一般情况下都不如马路边舒服自在。",
+      "refs": [
+        "https://zcbs.shyp.gov.cn/shopGuide/stationTable.html"
+      ],
+      "locNote": "杨浦区政府公布的五角场街道党群服务中心在达任大厦一楼；坐标按高德地图上达任大厦的位置标定。"
+    },
+    {
+      "id": "22a5b6e7",
+      "name": "YOUNG北小站（国权北居民区暖心驿站）",
+      "category": "rest",
+      "subtype": "station",
+      "lng": 121.497213,
+      "lat": 31.308379,
+      "address": "国权北路 10 弄",
+      "desc": "居民区里的暖心驿站，面向快递员、外卖员、环卫工人等一线劳动者开放，可以休息、充电、热饭。",
+      "tags": [
+        "可饮水",
+        "可充电",
+        "空调",
+        "微波炉"
+      ],
+      "facilities": "微波炉、空调、茶水、休息座椅、手机充电设备、急救医药箱（据 2024 年 12 月报道）",
+      "hours": "",
+      "photos": [],
+      "source": "公开资料",
+      "collector": "技术组（资料检索）",
+      "date": "2026-10-20",
+      "quote": "",
+      "refs": [
+        "https://www.163.com/dy/article/JJ48492Q055040N3.html"
+      ],
+      "locNote": "坐标按高德地图上“国权北路10弄小区”的标注标定，驿站在小区里的具体位置未实地核实。"
+    },
+    {
+      "id": "7f0ebbae",
+      "name": "诚品国际中环大厦周边",
+      "category": "obstacle",
+      "subtype": "parking",
+      "lng": 121.513596,
+      "lat": 31.303168,
+      "address": "淞沪路与政通路交汇处（地铁 10 号线江湾体育场站 6 号口）",
+      "desc": "用餐高峰时政通路、淞沪路人行道曾被电动车占满。2025 年 11 月改造后，大厦通道里划了外卖骑手专用停车区，淞沪路一侧新增了非机动车停放区。",
+      "tags": [
+        "用餐高峰"
+      ],
+      "facilities": "",
+      "hours": "",
+      "photos": [],
+      "source": "公开资料",
+      "collector": "技术组（资料检索）",
+      "date": "2026-10-20",
+      "quote": "",
+      "refs": [
+        "https://www.shyp.gov.cn/shypq/xwzx-jzdt/20260424/504224.html"
+      ],
+      "locNote": "坐标按高德地图上诚品国际中环大厦的标注标定。"
+    },
+    {
+      "id": "c6daa0de",
+      "name": "复旦大学邯郸校区",
+      "category": "obstacle",
+      "subtype": "noentry",
+      "lng": 121.503993,
+      "lat": 31.296063,
+      "address": "邯郸路 220 号",
+      "desc": "春季调研中骑手反映电动车进不了校园，只能停在校门外步行送到楼下，平台预留的时间不够。另据学校通告，2024 年 9 月起校外人员进入本部区域需提前一天线上登记、刷身份证。",
+      "tags": [],
+      "facilities": "",
+      "hours": "",
+      "photos": [],
+      "source": "骑手指认",
+      "collector": "春季调研组",
+      "date": "2026-05-10",
+      "quote": "",
+      "refs": [
+        "https://news.fudan.edu.cn/2024/0831/c45a142031/page.htm"
+      ],
+      "locNote": "这一条针对整个校区；坐标按高德地图上“复旦大学邯郸校区”的标注标定。"
+    }
   ]
 };

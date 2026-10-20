@@ -316,7 +316,7 @@
   });
 
   // ---------- 详情 ----------
-  var SOURCE_CLASS = { "实地走访": "src-field", "骑手指认": "src-rider", "实地走访+骑手指认": "src-both" };
+  var SOURCE_CLASS = { "实地走访": "src-field", "骑手指认": "src-rider", "实地走访+骑手指认": "src-both", "公开资料": "src-public" };
 
   function navUrl(p) {
     return "https://uri.amap.com/marker?position=" + p.lng + "," + p.lat +
@@ -351,7 +351,15 @@
     }
     h += '<a class="d-nav" href="' + navUrl(p) + '" target="_blank" rel="noopener">用高德地图导航到这里</a>';
     h += '<p class="d-source"><span class="src ' + (SOURCE_CLASS[p.source] || "") + '">' + esc(p.source || "来源未注明") + "</span>" +
-      (p.date ? "采集于 " + esc(p.date) : "") + (p.collector ? " · " + esc(p.collector) : "") + "</p>";
+      (p.date ? (p.source === "公开资料" ? "检索于 " : "采集于 ") + esc(p.date) : "") + (p.collector ? " · " + esc(p.collector) : "") + "</p>";
+    if (p.source === "公开资料") h += '<p class="d-note">信息来自公开报道或政府网站，团队没有到现场核实，情况可能已有变化。</p>';
+    if (p.locNote) h += '<p class="d-note">位置：' + esc(p.locNote) + "</p>";
+    if (p.refs && p.refs.length) {
+      h += '<p class="d-note">出处：' + p.refs.map(function (u, i) {
+        var safe = /^https?:\/\//.test(u) ? u : "#";
+        return '<a href="' + esc(safe) + '" target="_blank" rel="noopener">' + (p.refs.length > 1 ? "链接 " + (i + 1) : "查看原文") + "</a>";
+      }).join("　") + "</p>";
+    }
     $("detail").innerHTML = h;
   }
 
@@ -544,6 +552,13 @@
   rebuildMarkers();
 
   var m = location.hash.match(/^#p=(.+)$/);
-  if (m && pointById[decodeURIComponent(m[1])]) select(decodeURIComponent(m[1]), { fly: true });
+  if (m && pointById[decodeURIComponent(m[1])]) {
+    select(decodeURIComponent(m[1]), { fly: true });
+  } else if (points.length > 1) {
+    // 打开时让所有点位都在视野里（手机上留出底部面板的高度）
+    var bounds = L.latLngBounds(points.map(function (p) { return toDisplay(p.lng, p.lat); }));
+    var sheet = mobileMQ.matches ? parseInt(getComputedStyle(document.body).getPropertyValue("--sheet-closed"), 10) || 214 : 0;
+    map.fitBounds(bounds, { paddingTopLeft: [40, 40], paddingBottomRight: [mobileMQ.matches ? 60 : 70, 40 + sheet], maxZoom: CFG.zoom });
+  }
   if (/[?&]pick=1/.test(location.search)) setPickMode(true);
 })();

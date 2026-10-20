@@ -161,7 +161,13 @@ def main():
         if t["采集日期"] and not date:
             errs.append(f"采集日期“{t['采集日期']}”格式不对，请写成 2026-11-15")
 
-        for head in ("说明", "设施", "骑手原话", "地址", "名称"):
+        if source == "公开资料" and not t["出处"]:
+            errs.append("来源是“公开资料”时，“出处”要写网址")
+        refs = t["出处"].split()
+        if any(not r.startswith(("http://", "https://")) for r in refs):
+            errs.append("“出处”应为 http:// 或 https:// 开头的网址，多个用空格分隔")
+
+        for head in ("说明", "设施", "骑手原话", "地址", "名称", "位置说明"):
             if PHONE_RE.search(t[head]):
                 errs.append(f"“{head}”里好像有手机号，请删掉")
 
@@ -200,6 +206,8 @@ def main():
             "collector": t["采集人"],
             "date": date,
             "quote": t["骑手原话"],
+            "refs": refs,
+            "locNote": t["位置说明"],
         })
 
     for r, w in warnings:

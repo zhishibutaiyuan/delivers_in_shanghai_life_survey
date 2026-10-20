@@ -139,6 +139,10 @@ button { cursor: pointer; }
 .src-field { background: #e8f3ec; border-color: #b9dcc6; }
 .src-rider { background: #fdeee6; border-color: #f2c6b2; }
 .src-both { background: #e9f0fb; border-color: #bcd0ef; }
+.src-public { background: #f1effa; border-color: #cfc7ec; }
+.d-note { font-size: 12px; line-height: 1.6; color: var(--text-2); margin: 6px 0 0; }
+.d-note a { color: var(--accent); }
+body.big .d-note { font-size: 15px; }
 .d-sample { font-size: 12px; color: #8a6400; background: var(--sample); padding: 6px 10px; border-radius: 6px; }
 
 /* ---------- 地图元素 ---------- */

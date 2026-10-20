@@ -1,0 +1,8 @@
+# 调研组原始照片（含拍摄信息），只上传处理后的 photos/
+data/photos_raw/
+
+__pycache__/
+*.pyc
+~$*.xlsx
+.DS_Store
+Thumbs.db

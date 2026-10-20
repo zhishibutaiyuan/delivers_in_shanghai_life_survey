@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>五角场骑手地图</title>
+  <meta name="description" content="标出五角场一带外卖骑手能歇脚的地方和送餐容易卡住的地方。点位来自实地走访和骑手指认。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C10 2 6 6.5 6 12c0 7.5 10 18 10 18s10-10.5 10-18C26 6.5 22 2 16 2z' fill='%231f8a4c'/%3E%3Ccircle cx='16' cy='12' r='4' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="lib/leaflet/leaflet.css">
+  <link rel="stylesheet" href="lib/markercluster/MarkerCluster.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="panel" class="panel" data-sheet="closed" aria-label="点位列表">
+      <button id="sheet-handle" class="sheet-handle" type="button" aria-label="展开或收起列表"><span></span></button>
+
+      <header class="panel-head">
+        <h1>五角场骑手地图</h1>
+        <a class="head-link" href="about.html">关于</a>
+      </header>
+
+      <div id="sample-banner" class="sample-banner" hidden>
+        当前显示的是<strong>示例数据</strong>：点位是虚构的，只用来测试网页功能，不代表真实地点。
+      </div>
+
+      <div class="search">
+        <input id="q" type="search" placeholder="搜索名称、地址或标签，如“充电”" autocomplete="off" enterkeyhint="search">
+        <button id="q-clear" class="q-clear" type="button" aria-label="清空搜索" hidden>×</button>
+      </div>
+
+      <div id="view-list" class="view">
+        <details id="filters" class="filters" open>
+          <summary>按类型筛选</summary>
+          <div id="filter-groups"></div>
+        </details>
+        <div id="result-meta" class="result-meta"></div>
+        <ul id="results" class="results"></ul>
+      </div>
+
+      <div id="view-detail" class="view" hidden>
+        <button id="detail-back" class="detail-back" type="button">← 返回列表</button>
+        <article id="detail"></article>
+      </div>
+    </aside>
+
+    <main id="map" aria-label="地图"></main>
+
+    <div id="pick-bar" class="pick-bar" hidden>
+      <div class="pick-text"><strong>坐标拾取</strong>：点击地图上的位置获取坐标</div>
+      <div class="pick-actions">
+        <button id="pick-here" type="button">用我的当前位置</button>
+        <button id="pick-exit" type="button">退出</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="lib/leaflet/leaflet.js"></script>
+  <script src="lib/markercluster/leaflet.markercluster.js"></script>
+  <script src="data/taxonomy.js"></script>
+  <script src="data/points.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/coord.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

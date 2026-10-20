@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>关于 · 五角场骑手地图</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C10 2 6 6.5 6 12c0 7.5 10 18 10 18s10-10.5 10-18C26 6.5 22 2 16 2z' fill='%231f8a4c'/%3E%3Ccircle cx='16' cy='12' r='4' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    html, body { height: auto; }
+    .about { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; line-height: 1.75; font-size: 15px; }
+    .about h1 { font-size: 24px; margin: 8px 0 4px; }
+    .about h2 { font-size: 18px; margin: 28px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .about .lead { color: var(--text-2); margin: 0 0 8px; }
+    .about a { color: var(--accent); }
+    .about ul { padding-left: 1.3em; margin: 6px 0; }
+    .about .back { display: inline-block; text-decoration: none; padding: 6px 12px; background: var(--bg-soft); border-radius: 8px; color: var(--text); }
+    .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 12px; margin: 8px 0; padding: 0; list-style: none; }
+    .legend li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .legend .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 14%, white); font-size: 14px; flex: none; }
+    .legend-title { font-weight: 600; margin-top: 12px; }
+    .stats { color: var(--text-2); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main class="about">
+    <a class="back" href="index.html">← 返回地图</a>
+    <h1>五角场骑手地图</h1>
+    <p class="lead">标出五角场一带外卖骑手能歇脚的地方，和送餐容易卡住的地方。</p>
+    <p class="stats" id="stats"></p>
+
+    <h2>为什么做这张地图</h2>
+    <p>2026 年春天，我们在五角场访谈外卖骑手时发现两件事：</p>
+    <ul>
+      <li>附近其实有设施齐全的骑手驿站，但不少骑手<strong>不知道有这个地方</strong>，或者觉得太远、怕错过订单。</li>
+      <li>平台算的送餐时间，常常没算上<strong>电动车进不去的校门、要走很远的商场写字楼、停不了车的路边</strong>。</li>
+    </ul>
+    <p>所以我们把这些地方一个个走到、问到，标在一张地图上。</p>
+
+    <h2>图例</h2>
+    <div id="legend"></div>
+
+    <h2>数据从哪里来</h2>
+    <ul>
+      <li>每个点位都来自队员<strong>实地走访</strong>或<strong>骑手当面指认</strong>，详情里写明了来源、采集人和日期。</li>
+      <li>点位分类借助 AI 整理，但点位本身没有一个是 AI 生成的。</li>
+      <li>坐标使用 GCJ-02（与高德地图一致）。情况会变化，如果发现信息不准，欢迎反馈。</li>
+    </ul>
+
+    <h2>隐私</h2>
+    <ul>
+      <li>网页和代码仓库里不包含骑手的姓名、正脸照片、手机号等个人信息；骑手原话均匿名。</li>
+      <li>照片发布前已去除 GPS 等拍摄信息。</li>
+      <li>“我的位置”只在你自己的手机上计算距离，不会上传到任何地方。</li>
+    </ul>
+
+    <h2>反馈</h2>
+    <p id="feedback"></p>
+
+    <h2>关于我们</h2>
+    <p>复旦大学计算与智能创新学院 2026 年秋季日常化社会实践项目“技术向善——杨浦区外卖配送调研与信息地图实践”。网页在 AI 辅助下开发，代码开源：<a id="repo" href="#"></a></p>
+    <p class="stats">代码以 MIT 许可证开源；点位数据与照片以 CC BY 4.0 许可发布。</p>
+  </main>
+
+  <script src="data/taxonomy.js"></script>
+  <script src="data/points.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    (function () {
+      var TAX = window.RIDER_MAP_TAXONOMY, CFG = window.RIDER_MAP_CONFIG;
+      var DATA = window.RIDER_MAP_DATA || { points: [] };
+      var esc = function (s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
+
+      var html = "";
+      TAX.categories.forEach(function (c) {
+        html += '<div class="legend-title">' + esc(c.label) + '</div><ul class="legend">';
+        c.subtypes.forEach(function (s) {
+          html += '<li style="--c:' + c.color + '" title="' + esc(s.hint) + '"><span class="ic">' + s.icon + "</span>" + esc(s.label) + "</li>";
+        });
+        html += "</ul>";
+      });
+      document.getElementById("legend").innerHTML = html;
+
+      var n = { rest: 0, obstacle: 0 };
+      DATA.points.forEach(function (p) { n[p.category] = (n[p.category] || 0) + 1; });
+      document.getElementById("stats").textContent = DATA.isSample
+        ? "当前为示例数据，正式点位整理中。"
+        : "目前收录歇脚点 " + n.rest + " 个、障碍点 " + n.obstacle + " 个" + (DATA.generatedAt ? "，更新于 " + DATA.generatedAt : "") + "。";
+
+      var fb = document.getElementById("feedback");
+      if (CFG.feedbackUrl) {
+        fb.innerHTML = '发现信息不准、或者知道别的歇脚点和难送的地方？<a href="' + esc(CFG.feedbackUrl) + '" target="_blank" rel="noopener">填写反馈问卷</a>。';
+      } else {
+        fb.textContent = "反馈问卷待上线。";
+      }
+      var repo = document.getElementById("repo");
+      repo.href = CFG.repoUrl;
+      repo.textContent = CFG.repoUrl.replace(/^https?:\/\//, "");
+    })();
+  </script>
+</body>
+</html>

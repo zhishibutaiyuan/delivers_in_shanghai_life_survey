@@ -6,6 +6,11 @@
   <title>五角场骑手地图</title>
   <meta name="description" content="标出五角场一带外卖骑手能歇脚的地方和送餐容易卡住的地方。点位来自实地走访和骑手指认。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C10 2 6 6.5 6 12c0 7.5 10 18 10 18s10-10.5 10-18C26 6.5 22 2 16 2z' fill='%231f8a4c'/%3E%3Ccircle cx='16' cy='12' r='4' fill='white'/%3E%3C/svg%3E">
+  <!-- 提前连接底图服务器，缩短首次加载时间 -->
+  <link rel="preconnect" href="https://webrd01.is.autonavi.com">
+  <link rel="preconnect" href="https://webrd02.is.autonavi.com">
+  <link rel="preconnect" href="https://webrd03.is.autonavi.com">
+  <link rel="preconnect" href="https://webrd04.is.autonavi.com">
   <link rel="stylesheet" href="lib/leaflet/leaflet.css">
   <link rel="stylesheet" href="lib/markercluster/MarkerCluster.css">
   <link rel="stylesheet" href="css/style.css">
@@ -17,7 +22,10 @@
 
       <header class="panel-head">
         <h1>五角场骑手地图</h1>
-        <a class="head-link" href="about.html">关于</a>
+        <div class="head-actions">
+          <button id="btn-big" class="head-link" type="button" aria-pressed="false" title="放大文字">大字</button>
+          <a class="head-link" href="about.html">关于</a>
+        </div>
       </header>
 
       <div id="sample-banner" class="sample-banner" hidden>
@@ -27,6 +35,13 @@
       <div class="search">
         <input id="q" type="search" placeholder="搜索名称、地址或标签，如“充电”" autocomplete="off" enterkeyhint="search">
         <button id="q-clear" class="q-clear" type="button" aria-label="清空搜索" hidden>×</button>
+      </div>
+      <div id="quick" class="quick" aria-label="常用搜索">
+        <button type="button" data-q="喝水">喝水</button>
+        <button type="button" data-q="厕所">厕所</button>
+        <button type="button" data-q="充电">充电</button>
+        <button type="button" data-q="进不去">进不去</button>
+        <button type="button" data-q="停车">停车</button>
       </div>
 
       <div id="view-list" class="view">

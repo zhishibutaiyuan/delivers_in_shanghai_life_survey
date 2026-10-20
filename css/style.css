@@ -11,6 +11,7 @@
   --sample-line: #e8c565;
   --radius: 12px;
   --panel-w: 360px;
+  --sheet-closed: 214px;   /* 手机底部面板收起时的高度 */
   --shadow: 0 6px 24px rgba(20, 30, 20, 0.16);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   color: var(--text);
@@ -43,8 +44,19 @@ button { cursor: pointer; }
   padding: 16px 16px 8px;
 }
 .panel-head h1 { margin: 0; font-size: 20px; letter-spacing: 0.02em; }
-.head-link { color: var(--text-2); text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 8px; background: var(--bg-soft); }
+.head-actions { display: flex; gap: 6px; }
+.head-link { color: var(--text-2); text-decoration: none; font-size: 14px; padding: 6px 10px; border: 0; border-radius: 8px; background: var(--bg-soft); }
 .head-link:hover { color: var(--text); }
+.head-link[aria-pressed="true"] { background: var(--text); color: #fff; }
+
+/* 常用搜索 */
+.quick { display: flex; gap: 6px; margin: -2px 16px 10px; overflow-x: auto; scrollbar-width: none; }
+.quick::-webkit-scrollbar { display: none; }
+.quick button {
+  flex: none; padding: 6px 12px; font-size: 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text);
+}
+.quick button:hover { background: var(--bg-soft); }
 
 .sample-banner {
   margin: 4px 16px 8px; padding: 8px 12px; font-size: 13px; line-height: 1.5;
@@ -139,6 +151,12 @@ button { cursor: pointer; }
 }
 .pin span { transform: rotate(45deg); font-size: 16px; line-height: 1; }
 .pin.is-selected { transform: rotate(-45deg) scale(1.25); border-color: #111; z-index: 1; }
+.pin-wrap.is-sample .pin { filter: saturate(0.45); }
+.sample-tag {
+  position: absolute; left: 50%; top: 36px; transform: translateX(-50%);
+  font-size: 11px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 4px; white-space: nowrap;
+  background: var(--sample); border: 1px solid var(--sample-line); color: #7a5600;
+}
 .cluster-wrap { background: none; border: 0; }
 .cluster {
   width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
@@ -186,6 +204,25 @@ body.picking .pin-wrap, body.picking .cluster-wrap { pointer-events: none; opaci
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- 大字模式 ---------- */
+body.big { --sheet-closed: 262px; }
+body.big .panel-head h1 { font-size: 22px; }
+body.big .head-link, body.big .quick button { font-size: 17px; padding: 8px 14px; }
+body.big .search input { height: 52px; font-size: 18px; }
+body.big .sample-banner { font-size: 15px; }
+body.big .filters > summary, body.big .fgroup legend { font-size: 17px; }
+body.big .chip span { font-size: 16px; padding: 8px 12px; }
+body.big .result-meta { font-size: 15px; }
+body.big .item-name { font-size: 19px; }
+body.big .item-sub, body.big .item-dist { font-size: 15px; }
+body.big .item-icon { width: 44px; height: 44px; font-size: 22px; }
+body.big #detail h2 { font-size: 26px; }
+body.big .d-type, body.big .d-addr, body.big .d-rows, body.big .d-source, body.big .d-sample { font-size: 16px; }
+body.big .d-tags span { font-size: 15px; }
+body.big .d-desc, body.big .d-quote { font-size: 18px; }
+body.big .d-nav, body.big .detail-back { font-size: 18px; }
+body.big .pick-bar, body.big .toast { font-size: 17px; }
+
 /* ---------- 手机：底部面板 ---------- */
 @media (max-width: 760px) {
   #app { display: block; }
@@ -195,7 +232,7 @@ body.picking .pin-wrap, body.picking .cluster-wrap { pointer-events: none; opaci
     border-right: 0; border-radius: 16px 16px 0 0; box-shadow: var(--shadow); z-index: 1100;
     transition: height 0.25s ease; padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
-  .panel[data-sheet="closed"] { height: 172px; overflow: hidden; }
+  .panel[data-sheet="closed"] { height: var(--sheet-closed); overflow: hidden; }
   .panel[data-sheet="half"] { height: 52vh; }
   .panel[data-sheet="open"] { height: 86vh; }
   .sheet-handle {
@@ -208,7 +245,7 @@ body.picking .pin-wrap, body.picking .cluster-wrap { pointer-events: none; opaci
   .sample-banner { font-size: 12px; padding: 6px 10px; }
   .search { margin: 6px 16px 8px; }
   .panel[data-sheet="closed"] .sample-banner { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pick-bar { left: 12px; right: 12px; top: auto; bottom: 184px; }
-  .leaflet-bottom.leaflet-right { bottom: 172px; }
+  .pick-bar { left: 12px; right: 12px; top: auto; bottom: calc(var(--sheet-closed) + 12px); }
+  .leaflet-bottom.leaflet-right { bottom: var(--sheet-closed); }
   .toast { left: 50%; top: 12px; bottom: auto; transform: translate(-50%, -20px); }
 }

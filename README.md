@@ -9,11 +9,18 @@
 
 > 复旦大学计算与智能创新学院 2026 年秋季日常化社会实践项目“技术向善——杨浦区外卖配送调研与信息地图实践”。
 
+<p align="center">
+  <img src="docs/screenshots/mobile.png" width="240" alt="手机端地图与列表">
+  <img src="docs/screenshots/mobile-detail.png" width="240" alt="手机端点位详情">
+</p>
+
 ## 功能
 
 - 地图缩放、拖动，一键回到五角场；缩小时相邻点位自动合并
 - 按大类、子类筛选，显示每类数量
-- 按名称、地址、标签搜索（如“充电”“卫生间”“禁入”），回车直接打开第一个结果
+- 按名称、地址、标签搜索，支持近义词（搜“厕所”能找到“卫生间”），回车直接打开第一个结果
+- 搜索框下有“喝水、厕所、充电、进不去、停车”常用按钮，点一下就搜
+- 大字模式：右上角一键放大文字
 - 点位详情：说明、设施、开放时间、照片、骑手原话（匿名）、来源
 - 我的位置：定位后列表按距离排序
 - 一键跳转高德地图导航
@@ -44,6 +51,19 @@
 
 4. 刷新网页即可看到新数据。
 
+## 其他工具
+
+| 命令 | 作用 |
+|---|---|
+| `python tools/make_template.py` | 生成点位采集表模板 `docs/点位采集表.xlsx` |
+| `python tools/make_guide.py` | 生成给调研组的 `docs/采点指南.docx` |
+| `python tools/feedback.py` | 统计 `docs/反馈问卷.md` 里的答卷 |
+| `python tools/take_screenshots.py` | 用无界面 Edge/Chrome 给网页截图，存到 `docs/screenshots/` |
+| `python tools/make_poster.py` | 生成带二维码的 A4 海报 `docs/海报.png` / `.pdf`（需 `pip install qrcode`） |
+| `python tools/build_handbook.py` | 由点位、反馈、截图生成《调研手册》Word 稿（输出到仓库上一级目录） |
+
+数据更新后的推荐顺序：`build_data.py` → `take_screenshots.py` → `build_handbook.py`。
+
 ## 修改分类或配置
 
 | 想改什么 | 改哪个文件 |
@@ -66,7 +86,7 @@ data/points.js        网页读取的点位数据（脚本生成）
 photos/               处理后的照片
 lib/                  Leaflet 1.9.4、Leaflet.markercluster 1.5.3（本地副本）
 tools/                数据处理脚本、模板与手册生成
-docs/                 点位采集表模板等
+docs/                 点位采集表、采点指南、反馈问卷、待核实线索、海报、截图
 ```
 
 ## 技术说明

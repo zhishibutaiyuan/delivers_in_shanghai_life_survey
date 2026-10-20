@@ -17,7 +17,10 @@
   function subtypeLabel(k) { return subtypeByKey[k] ? subtypeByKey[k].label : ""; }
 
   points = points.filter(function (p) { return subtypeByKey[p.subtype]; });
-  RiderSearch.index(points, subtypeLabel);
+  RiderSearch.index(points, function (p) {
+    var st = subtypeByKey[p.subtype];
+    return st.category.label + " " + st.label;
+  });
   var pointById = {};
   points.forEach(function (p) { pointById[p.id] = p; });
 
@@ -118,9 +121,11 @@
   // ---------- 点位图标 ----------
   function pinIcon(p, selected) {
     var st = subtypeByKey[p.subtype];
+    // 示例数据：每个图钉下方挂“示例”标签，避免被当成真实地点
     return L.divIcon({
-      className: "pin-wrap",
-      html: '<div class="pin' + (selected ? " is-selected" : "") + '" style="--c:' + st.category.color + '"><span>' + st.icon + "</span></div>",
+      className: "pin-wrap" + (DATA.isSample ? " is-sample" : ""),
+      html: '<div class="pin' + (selected ? " is-selected" : "") + '" style="--c:' + st.category.color + '"><span>' + st.icon + "</span></div>" +
+        (DATA.isSample ? '<b class="sample-tag">示例</b>' : ""),
       iconSize: [34, 42],
       iconAnchor: [17, 40]
     });
@@ -248,7 +253,7 @@
       html += '<li><button type="button" class="item" data-id="' + esc(p.id) + '" style="--c:' + st.category.color + '">' +
         '<span class="item-icon">' + st.icon + "</span>" +
         '<span class="item-body"><span class="item-name">' + esc(p.name) + "</span>" +
-        '<span class="item-sub">' + esc(st.label) + (p.address ? " · " + esc(p.address) : "") + "</span></span>" +
+        '<span class="item-sub">' + (DATA.isSample ? "示例 · " : "") + esc(st.label) + (p.address ? " · " + esc(p.address) : "") + "</span></span>" +
         (it.dist != null ? '<span class="item-dist">' + fmtDist(it.dist) + "</span>" : "") +
         "</button></li>";
     });
@@ -279,6 +284,29 @@
       select(currentList[0].point.id, { fly: true });
     }
   });
+  // 常用搜索：骑手没空打字，点一下就搜
+  $("quick").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-q]");
+    if (!b) return;
+    qInput.value = b.dataset.q;
+    $("q-clear").hidden = false;
+    state.query = b.dataset.q;
+    if (state.selectedId) showList();
+    applyFilter();
+    setSheet("half");
+  });
+
+  // 大字模式（反馈里有骑手说字太小）；记住选择，浏览器不允许存储时也能正常用
+  var BIG_KEY = "riderMap.big";
+  function setBig(on) {
+    document.body.classList.toggle("big", on);
+    $("btn-big").setAttribute("aria-pressed", on ? "true" : "false");
+    $("btn-big").textContent = on ? "标准字" : "大字";
+    try { localStorage.setItem(BIG_KEY, on ? "1" : "0"); } catch (e) { /* 忽略 */ }
+  }
+  $("btn-big").addEventListener("click", function () { setBig(!document.body.classList.contains("big")); });
+  try { if (localStorage.getItem(BIG_KEY) === "1") setBig(true); } catch (e) { /* 忽略 */ }
+
   $("q-clear").addEventListener("click", function () {
     qInput.value = "";
     state.query = "";
@@ -298,7 +326,8 @@
   function renderDetail(p) {
     var st = subtypeByKey[p.subtype];
     var d = distTo(p);
-    var h = '<div class="d-type" style="--c:' + st.category.color + '"><span>' + st.icon + "</span>" +
+    var h = DATA.isSample ? '<p class="d-sample">这是示例点位，是虚构的，不是真实地点。</p>' : "";
+    h += '<div class="d-type" style="--c:' + st.category.color + '"><span>' + st.icon + "</span>" +
       esc(st.category.label) + " · " + esc(st.label) + "</div>";
     h += "<h2>" + esc(p.name) + "</h2>";
     if (p.address) h += '<p class="d-addr">' + esc(p.address) + (d != null ? " · 距你" + fmtDist(d) : "") + "</p>";
@@ -323,7 +352,6 @@
     h += '<a class="d-nav" href="' + navUrl(p) + '" target="_blank" rel="noopener">用高德地图导航到这里</a>';
     h += '<p class="d-source"><span class="src ' + (SOURCE_CLASS[p.source] || "") + '">' + esc(p.source || "来源未注明") + "</span>" +
       (p.date ? "采集于 " + esc(p.date) : "") + (p.collector ? " · " + esc(p.collector) : "") + "</p>";
-    if (DATA.isSample) h += '<p class="d-sample">这是示例点位，不是真实地点。</p>';
     $("detail").innerHTML = h;
   }
 

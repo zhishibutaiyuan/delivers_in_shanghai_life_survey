@@ -5,19 +5,26 @@
     真实数据 → ../调研手册（自动生成稿）.docx
     示例数据 → ../调研手册（示例数据预览）.docx
 
-点位图鉴、统计表、采集概况由数据自动生成；黄色高亮的【待填写】处需要调研组补充。
+点位图鉴、统计表、采集概况由数据自动生成；有 docs/反馈问卷.md 时自动统计骑手反馈；
+有 docs/screenshots/ 和 docs/海报.png 时自动插入网页截图和海报。
+黄色高亮的【待填写】处需要调研组补充。
 每次重新生成会覆盖旧文件，所以请在生成后的副本上修改，或先改完数据再生成。
 """
+import re
 import sys
 from collections import Counter
 from pathlib import Path
 
 from docx.shared import Cm, RGBColor
 
-from common import PHOTOS_DIR, ROOT, load_points, load_taxonomy
+from common import PAGES_URL, PHOTOS_DIR, REPO_URL, ROOT, load_points, load_taxonomy
 from docx_util import (GRAY, GREEN, bullet, kv_table, new_document, page_break, page_numbers, para, rich,
                        steps, table, todo)
+from feedback import load_responses, tally, texts
 from make_guide import INTERVIEW_OPENING, INTERVIEW_QUESTIONS
+
+SHOTS = ROOT / "docs" / "screenshots"
+POSTER = ROOT / "docs" / "海报.png"
 
 
 # 封面信息（来自申报书）
@@ -27,8 +34,69 @@ LEADER = "赵思远"
 ADVISOR = "蔡瑞悦"
 MEMBERS = "李昀泽、唐子姗、刘沛瑜、徐紫羽、张蕙孜"
 DATE = "2026 年 12 月"
-REPO_URL = "https://github.com/zhishibutaiyuan/delivers_in_shanghai_life_survey"
 RED = RGBColor(0xC0, 0x2A, 0x1A)
+
+
+def short(option):
+    """去掉选项里较长的括号说明（如“（能不能喝水、充电、上厕所）”），表格里更紧凑；
+    “（专送）”“（众包）”这类区分选项的短括号保留。"""
+    return re.sub(r"（[^）]*[、，][^）]*）", "", option).strip()
+
+
+def picture(doc, paths, width_cm, caption):
+    """一行放一张或多张图，下面加图注。找不到图片时返回 False。"""
+    paths = [p for p in paths if p.exists()]
+    if not paths:
+        return False
+    par = doc.add_paragraph()
+    par.alignment = 1  # 居中
+    for i, f in enumerate(paths):
+        if i:
+            par.add_run("　")
+        par.add_run().add_picture(str(f), width=Cm(width_cm))
+    para(doc, caption, size=9.5, color=GRAY, align="center")
+    return True
+
+
+def feedback_section(doc, num):
+    qs, rs = load_responses()
+    doc.add_heading(f"{num}、骑手反馈", level=1)
+    if not rs:
+        todo(doc, "回访后把答卷按格式整理进 docs/反馈问卷.md，重新生成本手册即可自动统计。")
+        return
+    def is_rider(r):
+        return not any(c.startswith("不是骑手") for c in r["answers"].get(1, {}).get("choices", []))
+    riders = [r for r in rs if is_rider(r)]
+    para(doc, f"共收回反馈问卷 {len(rs)} 份，其中骑手 {len(riders)} 份、非骑手 {len(rs) - len(riders)} 份。"
+              "样本较少，以下只描述答卷情况，不代表五角场骑手整体。")
+    todo(doc, "写明问卷在什么时间、什么场合收集（当面回访还是线上），以及是本人填写还是调研员代填。")
+
+    doc.add_heading("（一）选择题统计", level=2)
+    rows = [[f"{q}. {qs[q]}", n, "；".join(f"{short(k)} {v}" for k, v in c.most_common())]
+            for q, (n, c) in tally(qs, rs).items()]
+    table(doc, ["题目", "作答人数", "选项（人数）"], rows, [6, 1.6, 8.4], font_size=9.5)
+
+    if riders:
+        doc.add_heading("（二）每位骑手的回答", level=2)
+        def pick(r, q):
+            a = r["answers"].get(q)
+            return "、".join(short(x) for x in a["choices"]) if a and a["choices"] else "—"
+        rows = [[r["title"], pick(r, 3), pick(r, 6), pick(r, 7), pick(r, 8)] for r in riders]
+        table(doc, ["受访者", "之前知道歇脚点吗", "觉得有用的", "不方便的", "还会打开吗"], rows,
+              [3.6, 2.6, 3.8, 3.6, 2.4], font_size=9.5)
+
+    doc.add_heading("（三）原话摘录", level=2)
+    for q, items in texts(qs, rs).items():
+        items = [(t, x) for t, x in items if x.strip() not in ("没有", "无", "没")]
+        if not items:
+            continue
+        para(doc, f"{q}. {qs[q]}", bold=True, size=10.5)
+        for title, x in items:
+            bullet(doc, f"{x}（{title}）")
+    para(doc, "答卷中提到的地点已整理进 docs/待核实线索.xlsx，调研组实地核实后才会加入地图。", size=10, color=GRAY)
+
+    doc.add_heading("（四）解读", level=2)
+    todo(doc, "结合上面的表格写 2–3 句解读。例如：新骑手和老骑手各自更需要哪类信息；不再打开的原因是什么；对网页和对平台分别意味着什么。")
 
 
 def point_card(doc, p, sub_label, cat_label):
@@ -130,7 +198,8 @@ def main():
             rows.append([c["label"], f'{s["icon"]} {s["label"]}', sub_count.get(s["key"], 0), s["hint"]])
     rows.append(["合计", "", len(points), ""])
     table(doc, ["大类", "子类", "数量", "包括哪些地方"], rows, [2, 3.4, 1.6, 9])
-    todo(doc, "插入网页地图截图（显示全部点位）。")
+    if not picture(doc, [SHOTS / "desktop.png"], 16, "图 1　《五角场骑手地图》网页（电脑端）"):
+        todo(doc, "插入网页地图截图（运行 tools/take_screenshots.py 后重新生成即可自动插入）。")
 
     # ---------- 四、五、图鉴 ----------
     for num, c in (("四", tax["categories"][0]), ("五", tax["categories"][1])):
@@ -148,9 +217,13 @@ def main():
             for p in sorted(group, key=lambda x: x["name"]):
                 point_card(doc, p, s["label"], c["label"])
 
-    # ---------- 六、发现与建议 ----------
+    # ---------- 六、骑手反馈 ----------
     page_break(doc)
-    doc.add_heading("六、发现与建议", level=1)
+    feedback_section(doc, "六")
+
+    # ---------- 七、发现与建议 ----------
+    page_break(doc)
+    doc.add_heading("七、发现与建议", level=1)
     if points:
         top = sub_count.most_common()
         top_obstacle = next((sub_info[k][1]["label"] for k, _ in top if sub_info[k][0]["key"] == "obstacle"), None)
@@ -169,20 +242,26 @@ def main():
            "给驿站和街道：")
     bullet(doc, "持续更新这张地图，欢迎骑手和市民反馈新的点位。", "给我们自己：")
 
-    # ---------- 七、网页介绍 ----------
-    doc.add_heading("七、《五角场骑手地图》网页", level=1)
+    # ---------- 八、网页介绍 ----------
+    doc.add_heading("八、《五角场骑手地图》网页", level=1)
     para(doc, "网页用手机浏览器即可打开，不需要下载 App。主要功能：")
     for name, text in (
         ("地图浏览：", "缩放、拖动，一键回到五角场；歇脚点为绿色、障碍点为橙红色。"),
         ("类型筛选：", "按大类和子类勾选显示。"),
-        ("搜索：", "按名称、地址、标签搜索，如“充电”“卫生间”“禁入”。"),
+        ("搜索：", "按名称、地址、标签搜索；搜“厕所”也能找到“卫生间”；搜索框下有喝水、厕所、充电等常用按钮，点一下就搜。"),
         ("详情：", "说明、设施、开放时间、照片、骑手原话和信息来源。"),
         ("我的位置与导航：", "定位后按距离排序，一键跳转高德地图导航。"),
+        ("大字模式：", "右上角“大字”按钮放大全部文字，方便在路边看清。"),
         ("坐标拾取：", "调研时在现场一键获取坐标，方便以后继续补充点位。"),
     ):
         bullet(doc, text, name)
+    para(doc, "其中“大字模式”“常用搜索按钮”和近义词搜索，是根据反馈问卷里骑手提出的“字太小”“找不到想要的地方”新增的。",
+         size=10, color=GRAY)
+    picture(doc, [SHOTS / "mobile.png", SHOTS / "mobile-detail.png"], 6.2, "图 2　手机端：地图与列表（左），点位详情（右）")
+    rich(doc, ["网页地址：", (PAGES_URL, {"bold": True})])
     rich(doc, ["代码开源：", (REPO_URL, {"bold": True})])
-    todo(doc, "网页访问地址（GitHub Pages 开通后填写）、网页截图 2–3 张、二维码。")
+    if POSTER.exists():
+        para(doc, "宣传海报（带二维码，可贴在驿站和商家门口）见附录三。")
 
     # ---------- 附录 ----------
     page_break(doc)
@@ -192,6 +271,10 @@ def main():
     steps(doc, INTERVIEW_QUESTIONS)
     doc.add_heading("附录二　活动照片", level=1)
     todo(doc, "插入活动照片（8 张，命名为“拍摄者+照片内容简介”）。")
+    if POSTER.exists():
+        page_break(doc)
+        doc.add_heading("附录三　宣传海报", level=1)
+        picture(doc, [POSTER], 12.5, "扫码打开《五角场骑手地图》")
 
     out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(out)

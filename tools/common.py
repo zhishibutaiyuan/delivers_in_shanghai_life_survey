@@ -11,6 +11,10 @@ POINTS_XLSX = DATA_DIR / "points.xlsx"
 POINTS_JS = DATA_DIR / "points.js"
 TAXONOMY_JS = DATA_DIR / "taxonomy.js"
 
+# 网页在线地址（GitHub Pages）。海报二维码和调研手册使用。
+PAGES_URL = "https://zhishibutaiyuan.github.io/delivers_in_shanghai_life_survey/"
+REPO_URL = "https://github.com/zhishibutaiyuan/delivers_in_shanghai_life_survey"
+
 # 点位采集表的列，顺序即 Excel 中的列顺序
 COLUMNS = [
     # (表头, 字段名, 是否必填, 说明)
